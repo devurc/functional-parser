@@ -38,13 +38,13 @@ cons(a, b) = a:b
 --example: (char -# char) "abc" -> Just(’b’, "c")
 --         (char -# char) "a" -> Nothing
 
---# means that the results of the two parsers are combined into a pair.
+--(#) means that the results of the two parsers are combined into a pair.
 
 -- >-> is used to transform the result of a parser. The right operand of >-> named
 -- k is the FUNCTION defining the transformation. The result of the operation is a
 -- new parser.
 
--So make the two parsers into a pair and extract the first or the second.
+--So make the two parsers into a pair and extract the first or the second.
 ------------------------------------------------------------------------
 
 (-#) :: Parser a -> Parser b -> Parser b
@@ -60,7 +60,7 @@ m #- n = (m # n) >-> fst
 ------------------------------------------------------------------------
 
 spaces :: Parser String
-spaces =  iter isSpace String
+spaces =  iter (char ? isSpace)
 --Not sure if correct like is String even the right keyword to use??
 
 token :: Parser a -> Parser a
@@ -84,7 +84,8 @@ word = token (letter # iter letter >-> cons)
 --idk if this will work either
 ------------------------------------------------------------------------
 chars :: Int -> Parser String
-chars n =  iterate Char n letter
+chars 0 = iter char 
+chars n = char # chars (n-1) >-> cons
 
 accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)

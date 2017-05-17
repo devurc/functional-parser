@@ -68,7 +68,7 @@ fail cs = Nothing
 ------PARSER OPERATORS-------
 
 ----ALTERNATIVES IN GRAMMAR----
---! is an infix operator
+--(!) is an infix operator
 --example: (m ! n)
 --If m is applied to the input string and succeeds then thats it
 --If it fails then apply n to input string
@@ -79,7 +79,7 @@ fail cs = Nothing
              Nothing -> n cs
              mcs -> mcs
 
---? is also an infix operator
+--(?) is also an infix operator
 --example: (m ? p) is a parser which applies m to an input string and tests
 --if the result satisfies p
 
