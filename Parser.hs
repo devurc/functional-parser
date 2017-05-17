@@ -16,6 +16,7 @@ module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
 import Prelude hiding (return, fail, iterate) --Hiding the iterate function!!!
 import Data.Char
 import CoreParser
+import Data.Maybe
 infixl 7 -#, #-
 
 type T a = Parser a
@@ -49,7 +50,7 @@ cons(a, b) = a:b
 
 (-#) :: Parser a -> Parser b -> Parser b
 m -# n = (m # n) >-> snd
-
+ 
 (#-) :: Parser a -> Parser b -> Parser a
 m #- n = (m # n) >-> fst
 
@@ -84,8 +85,7 @@ word = token (letter # iter letter >-> cons)
 --idk if this will work either
 ------------------------------------------------------------------------
 chars :: Int -> Parser String
-chars 0 = iter char 
-chars n = char # chars (n-1) >-> cons
+chars n = iterate char n
 
 accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)
