@@ -15,6 +15,8 @@
 -- Will make heavy use of the parser functions - import parser module
 
 -- We rename the type class Parse to T.
+
+--Need to extend the datatype
 ------------------------------------------------------------------------
 
 module Expr(Expr, T, parse, fromString, value, toString) where

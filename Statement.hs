@@ -69,40 +69,52 @@ write = accept "write" -# Expr.parse #- require ";" >-> Write
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 
---The dictionary insert function takes in two (tuple) values, the key and value pair.
+--The dictionary insert function takes in two (tuple) values, the key and value pair as well as the
+--dictionary name it is to be inserted into
 exec (Assignment variable expression : statements) dict input = exec statements newDictEntry input
-  where newDictEntry = (Dictionary.insert (variable, Expr.value expression dict) dict)
+  where newDictEntry = (Dictionary.insert (variable Expr.value expression) dict) dict
 
 --Skipping. Recursively calling on statements (that follow after the skip keyword in program) with dict and input
 exec (Skip : statements) dict input = exec statements dict input
 
-exec (Begin stmt : statements) dict input = exec (stmt ++ statements) dict input
+exec (Begin stmt : statements) dict input = exec newStatement dict input
+  newStatement = stmt ++ statements
 
 exec (If cond thenStmts elseStmts: statements) dict input =
     if (Expr.value cond dict)>0
-    then exec (thenStmts: statements) dict input
-    else exec (elseStmts: statements) dict
+    then exec (thenStmts : statements) dict input
+    else exec (elseStmts : statements) dict
 
 --Similar to the 'If Then Else' exec, if the while condition is satisfied, then the 'then' instruction is
 --executed. Else, just skip instead of a condition
-exec (While expression stmt: statements) =
-  if (Expr.value cond dict)>0
-  then exec (stmt:(While expression stmt):statements) dict input
-  else exec statements dict inpit
+exec (While expression stmt : statements) dict input =
+  | Expr.value cond dict > 0 =exec (stmt : whileStatement : statements) dict input
+  | otherwise = skip
+  where whileStatement = While expression stmt
+        skip = exec statements dict input
 
-exec (Read variable : statements) dict (input:inputs) = exec statements (Dictionary.insert(variable, input) dict) inputs
+--When reading a new variable, we need to add it to our dictionary (kinda acts as a memory)
+exec (Read variable : statements) dict (input:inputs) = exec statements newDictEntry inputs
+  where newDictEntry = Dictionary.insert(variable, input) dict
 
 exec (write expression : statements) dict input = Expr.value expression dict : exec statements dict input
 
 statement = assignment ! skip ! begin ! if ! while ! read ! write
 
+------------------------------------------------------------------------
+--Because the toString function in Program.hs calls this very function below, it is here
+--that we would need to implement indentation and newline characters
+------------------------------------------------------------------------
+
+indent = "  "
+
 instance Parse Statement where
   parse = statement
-  toString (Assignment variable expression) = variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n""
-  toString (Skip) = "skip" ++ ";" ++ "\n""
-  toString (Begin statements) = "begin" ++ "\n"" ++ stmt ++ "end" ++ "\n""
+  toString (Assignment variable expression) = indent ++ variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n""
+  toString (Skip) = indent ++ "skip" ++ ";" ++ "\n""
+  toString (Begin statements) = indent ++ "begin" ++ "\n"" ++ stmt ++ "end" ++ "\n""
     where stmt = foldr (++) $ map toString statements
-  toString (If expression thenstmt elsestmt) = "if" ++ Expr.toString expression ++ "then" ++ "\n"" ++ Expr.toString thenstmt ++ "else" ++ Expr.toString elsestmt ++ "\n""
-  toString (While expression stmt) = "while" ++ expression ++ "do" ++ "\n"" ++ Expr.toString stmt
-  toString (Read variable) = "read" ++ variable ++ ";" ++ "\n""
-  toString (Write expression) = "write" ++ Expr.toString expression  ++ ";" ++ "\n""
+  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n"" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n""
+  toString (While expression stmt) = indent ++ "while" ++ expression ++ "do" ++ "\n"" ++ indent ++ Expr.toString stmt
+  toString (Read variable) = indent ++ "read" ++ variable ++ ";" ++ "\n""
+  toString (Write expression) = indent ++ "write" ++ Expr.toString expression  ++ ";" ++ "\n""
