@@ -31,7 +31,6 @@ data Statement =
 
 ----PARSING FUNCTIONS----
 --Type Signature--
-assignment, skip, begin, if, while, read, write :: Parser Statement
 
 assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
 buildAss (variable, expression) = Assignment variable expression
@@ -41,7 +40,7 @@ buildSkip _ = Skip
 
 begin = accept "begin" -# iter statement #- require "end" >-> Begin
 
-if = accept "if" -# Expr.parse #- require "then" statement #- require "else" # statement >-> buildIf
+ifs = accept "if" -# Expr.parse # require "then" -# statement # require "else" -# statement >-> buildIf
 buildIf ((expression, thenstmt), elsestmt) = If expression thenstmt elsestmt
 
 while = accept "while" -# Expr.parse #- require "do" #statement >-> buildWhile
@@ -78,7 +77,7 @@ exec (Assignment variable expression : statements) dict input = exec statements 
 exec (Skip : statements) dict input = exec statements dict input
 
 exec (Begin stmt : statements) dict input = exec newStatement dict input
-  newStatement = stmt ++ statements
+  where newStatement = stmt ++ statements
 
 exec (If cond thenStmts elseStmts: statements) dict input =
     if (Expr.value cond dict)>0
@@ -87,7 +86,7 @@ exec (If cond thenStmts elseStmts: statements) dict input =
 
 --Similar to the 'If Then Else' exec, if the while condition is satisfied, then the 'then' instruction is
 --executed. Else, just skip instead of a condition
-exec (While expression stmt : statements) dict input =
+exec (While expression stmt : statements) dict input
   | Expr.value cond dict > 0 =exec (stmt : whileStatement : statements) dict input
   | otherwise = skip
   where whileStatement = While expression stmt
@@ -97,9 +96,9 @@ exec (While expression stmt : statements) dict input =
 exec (Read variable : statements) dict (input:inputs) = exec statements newDictEntry inputs
   where newDictEntry = Dictionary.insert(variable, input) dict
 
-exec (write expression : statements) dict input = Expr.value expression dict : exec statements dict input
+exec (Write expression : statements) dict input = Expr.value expression dict : exec statements dict input
 
-statement = assignment ! skip ! begin ! if ! while ! read ! write
+statement = assignment ! skip ! begin ! ifs ! while ! read ! write
 
 ------------------------------------------------------------------------
 --Because the toString function in Program.hs calls this very function below, it is here
@@ -110,11 +109,11 @@ indent = "  "
 
 instance Parse Statement where
   parse = statement
-  toString (Assignment variable expression) = indent ++ variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n""
-  toString (Skip) = indent ++ "skip" ++ ";" ++ "\n""
-  toString (Begin statements) = indent ++ "begin" ++ "\n"" ++ stmt ++ "end" ++ "\n""
+  toString (Assignment variable expression) = indent ++ variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n"
+  toString (Skip) = indent ++ "skip" ++ ";" ++ "\n"
+  toString (Begin statements) = indent ++ "begin" ++ "\n" ++ stmt ++ "end" ++ "\n""
     where stmt = foldr (++) $ map toString statements
-  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n"" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n""
-  toString (While expression stmt) = indent ++ "while" ++ expression ++ "do" ++ "\n"" ++ indent ++ Expr.toString stmt
+  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n
+  toString (While expression stmt) = indent ++ "while" ++ expression ++ "do" ++ "\n ++ indent ++ Expr.toString stmt
   toString (Read variable) = indent ++ "read" ++ variable ++ ";" ++ "\n""
-  toString (Write expression) = indent ++ "write" ++ Expr.toString expression  ++ ";" ++ "\n""
+  toString (Write expression) = indent ++ "write" ++ Expr.toString expression  ++ ";" ++ "\n"

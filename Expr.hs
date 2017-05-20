@@ -117,29 +117,25 @@ value :: Expr -> Dictionary.T String Integer -> Integer
 --If it's a number then just return it because it is the final value.
 value (Num n) _ = n
 
---This is for the case where Expr is Var String so v here is the string.
-value (Var v) = dictionary = case (Dictionary.lookup v dictionary) of
-  | Nothing = error ("Expr.value: undefined variable " ++ v)
-  | otherwise = a
+value (Var v) dictionary = case (Dictionary.lookup v dictionary) of
+  Nothing -> error ("Expr.value: undefined variable " ++ v)
+  Just a -> a
 
---value (Var v) dictionary = case (Dictionary.lookup v dictionary) of
-  --| Just a = a
-  --| otherwise error ("Expr.value: undefined variable " ++ v)
 
---value (Var v) dictionary = case (Dictionary.lookup v dictionary) of
-  --Nothing -> error ("Expr.value: undefined variable " ++ v)
-  --Just a -> a
 
-value (Add exprl exprr) dictionary = evaluateLeft + evaluateRight
-value (Sub exprl exprr) dictionary = evaluateLeft + evaluateRight
-value (Mul exprl exprr) dictionary = evaluateLeft * evaluateRight
-value (Div exprl exprr) dictionary =
-  | 0 = error "Expr.value: Division by 0 not permitted"
-  | otherwise = value lhs dictionary 'div' value rhs dictionary
+value (Add exprl exprr) dictionary = value exprl dictionary + value exprr dictionary
+value (Sub exprl exprr) dictionary = value exprl dictionary + value exprr dictionary
+value (Mul exprl exprr) dictionary = value exprl dictionary * value exprr dictionary
 
-  where
-  evaluateLeft = value exprl dictionary
-  evaluateRight = value exprr dictionary
+--I tried to condense the repetitive stuff into the following keywords but the
+--ghci thing didnt like it
+  --where evaluateLeft = value exprl dictionary
+        --evaluateRight = value exprr dictionary
+
+value (Div exprl exprr) dictionary = case value exprr dictionary of
+  0 -> error "Expr.value: Division by 0 not permitted"
+  _ -> value exprl dictionary `div` value exprr dictionary
+
 
 
 instance Parse Expr where

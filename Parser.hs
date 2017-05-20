@@ -27,11 +27,6 @@ err message cs = error (message++" near "++cs++"\n")
 iter :: Parser a -> Parser [a]
 iter m = m # iter m >-> cons ! return []
 
-
-iterate :: Parser a -> Int -> Parser [a]
-iterate m 0 = return []
-iterate m i = m # iterate m (i-1) >-> cons
-
 --Cons = concatenate?
 cons(a, b) = a:b
 
@@ -89,9 +84,9 @@ word = token (letter # iter letter >-> cons)
 --idk if this will work either
 ------------------------------------------------------------------------
 chars :: Int -> Parser String
---chars 0 = return []
---chars n = char # chars (n-1) >-> cons
-chars n = iter char n
+chars 0 = return []
+chars n = char # chars (n-1) >-> cons
+
 
 accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)
