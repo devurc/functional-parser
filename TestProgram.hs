@@ -28,7 +28,7 @@ p1 = fromString  ("\
 \    q := n/b;\
 \    r := n - q*b;\
 \    write r;\
-\    s := p*r+s;\                    
+\    s := p*r+s;\
 \    p := p*10;\
 \    n :=q;\
 \  end\
@@ -49,14 +49,14 @@ rp1 = Program.exec p1 [1024, 2]
 p4 = fromString  ("\
 \read a;\
 \read b;\
-\-- a comment\
+\-- a comment\n\
 \s := 3;\
 \while a do\
 \  begin\
 \    c := a^s;\
 \    d := 2^a;\
 \    write c;\
-\    write d;\                    
+\    write d;\
 \    a := a-1;\
 \  end\
 \write a;")

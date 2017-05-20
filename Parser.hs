@@ -13,7 +13,7 @@
 module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
               lit, number, iter, accept, require, token,
               spaces, word, (-#), (#-)) where
-import Prelude hiding (return, fail, iterate) --Hiding the iterate function!!!
+import Prelude hiding (return, fail)
 import Data.Char
 import CoreParser
 import Data.Maybe
@@ -27,10 +27,12 @@ err message cs = error (message++" near "++cs++"\n")
 iter :: Parser a -> Parser [a]
 iter m = m # iter m >-> cons ! return []
 
+
 iterate :: Parser a -> Int -> Parser [a]
 iterate m 0 = return []
 iterate m i = m # iterate m (i-1) >-> cons
 
+--Cons = concatenate?
 cons(a, b) = a:b
 
 ------------------------------------------------------------------------
@@ -50,7 +52,7 @@ cons(a, b) = a:b
 
 (-#) :: Parser a -> Parser b -> Parser b
 m -# n = (m # n) >-> snd
- 
+
 (#-) :: Parser a -> Parser b -> Parser a
 m #- n = (m # n) >-> fst
 
@@ -62,7 +64,6 @@ m #- n = (m # n) >-> fst
 
 spaces :: Parser String
 spaces =  iter (char ? isSpace)
---Not sure if correct like is String even the right keyword to use??
 
 token :: Parser a -> Parser a
 token m = m #- spaces
@@ -72,6 +73,9 @@ token m = m #- spaces
 --Returns true if the character is an alphabetic letter
 -- Char -> Bool
 --the infix operator ? is a condition checker sorta
+
+--As for word, this function parses a word by parsing first a letter, then by
+--a sequence of letters while concatenating the resulting value.
 ------------------------------------------------------------------------
 
 letter :: Parser Char
@@ -85,7 +89,9 @@ word = token (letter # iter letter >-> cons)
 --idk if this will work either
 ------------------------------------------------------------------------
 chars :: Int -> Parser String
-chars n = iterate char n
+--chars 0 = return []
+--chars n = char # chars (n-1) >-> cons
+chars n = iter char n
 
 accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)
@@ -103,14 +109,16 @@ accept w = (token (chars (length w))) ? (==w)
 --the missing string using err in case of failure. uh yeah so wtf
 --this parser behaves as accept but emits an error message instead of
 --returning nothing
+--parses for a specific substring?
 
 --err is defined as err message cs = error (message++" near "++cs++"\n")
 --if accept w fails then continue to error message via (!)
 ------------------------------------------------------------------------
 
 require :: String -> Parser String
-require w  = accept w ! err "There is a missing string??"
+require w  = accept w ! (err ("There is a missing string??"))
 
+--Parsing for a specific character c
 lit :: Char -> Parser Char
 lit c = token char ? (==c)
 
