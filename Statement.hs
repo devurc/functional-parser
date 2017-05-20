@@ -22,7 +22,7 @@ type T = Statement
 data Statement =
     Assignment String Expr.T |
     Skip |
-    Begin [statement] |
+    Begin [Statement] |
     If Expr.T Statement Statement |
     While Expr.T Statement |
     Read String |
@@ -46,7 +46,7 @@ buildIf ((expression, thenstmt), elsestmt) = If expression thenstmt elsestmt
 while = accept "while" -# Expr.parse #- require "do" #statement >-> buildWhile
 buildWhile(expression, statement) = While expression statement
 
-read = accept "read" -# word #- require ";" >-> Read
+readStatement = accept "read" -# word #- require ";" >-> Read
 
 write = accept "write" -# Expr.parse #- require ";" >-> Write
 
@@ -71,7 +71,7 @@ exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 --The dictionary insert function takes in two (tuple) values, the key and value pair as well as the
 --dictionary name it is to be inserted into
 exec (Assignment variable expression : statements) dict input = exec statements newDictEntry input
-  where newDictEntry = (Dictionary.insert (variable Expr.value expression) dict) dict
+  where newDictEntry = Dictionary.insert (variable, Expr.value expression dict) dict
 
 --Skipping. Recursively calling on statements (that follow after the skip keyword in program) with dict and input
 exec (Skip : statements) dict input = exec statements dict input
@@ -82,12 +82,12 @@ exec (Begin stmt : statements) dict input = exec newStatement dict input
 exec (If cond thenStmts elseStmts: statements) dict input =
     if (Expr.value cond dict)>0
     then exec (thenStmts : statements) dict input
-    else exec (elseStmts : statements) dict
+    else exec (elseStmts : statements) dict input
 
 --Similar to the 'If Then Else' exec, if the while condition is satisfied, then the 'then' instruction is
 --executed. Else, just skip instead of a condition
 exec (While expression stmt : statements) dict input
-  | Expr.value cond dict > 0 =exec (stmt : whileStatement : statements) dict input
+  | Expr.value expression dict > 0 = exec (stmt : whileStatement : statements) dict input
   | otherwise = skip
   where whileStatement = While expression stmt
         skip = exec statements dict input
@@ -98,7 +98,7 @@ exec (Read variable : statements) dict (input:inputs) = exec statements newDictE
 
 exec (Write expression : statements) dict input = Expr.value expression dict : exec statements dict input
 
-statement = assignment ! skip ! begin ! ifs ! while ! read ! write
+statement = assignment ! skip ! begin ! ifs ! while ! readStatement ! write
 
 ------------------------------------------------------------------------
 --Because the toString function in Program.hs calls this very function below, it is here
@@ -111,9 +111,9 @@ instance Parse Statement where
   parse = statement
   toString (Assignment variable expression) = indent ++ variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n"
   toString (Skip) = indent ++ "skip" ++ ";" ++ "\n"
-  toString (Begin statements) = indent ++ "begin" ++ "\n" ++ stmt ++ "end" ++ "\n""
-    where stmt = foldr (++) $ map toString statements
-  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n
-  toString (While expression stmt) = indent ++ "while" ++ expression ++ "do" ++ "\n ++ indent ++ Expr.toString stmt
-  toString (Read variable) = indent ++ "read" ++ variable ++ ";" ++ "\n""
+  toString (Begin statements) = indent ++ "begin" ++ "\n" ++ stmt ++ "end" ++ "\n"
+    where stmt = foldr1 (++) $ map toString statements
+  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n"
+  toString (While expression stmt) = indent ++ "while" ++ Expr.toString expression ++ "do" ++ "\n" ++ indent ++ Expr.toString stmt
+  toString (Read variable) = indent ++ "read" ++ variable ++ ";" ++ "\n"
   toString (Write expression) = indent ++ "write" ++ Expr.toString expression  ++ ";" ++ "\n"
