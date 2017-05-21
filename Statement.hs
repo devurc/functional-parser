@@ -68,6 +68,7 @@ write = accept "write" -# Expr.parse #- require ";" >-> Write
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 
+exec [] _ _ = []
 --The dictionary insert function takes in two (tuple) values, the key and value pair as well as the
 --dictionary name it is to be inserted into
 exec (Assignment variable expression : statements) dict input = exec statements newDictEntry input
@@ -80,16 +81,17 @@ exec (Begin stmt : statements) dict input = exec newStatement dict input
   where newStatement = stmt ++ statements
 
 exec (If cond thenStmts elseStmts: statements) dict input =
-    if (Expr.value cond dict)>0
+    if (Expr.value cond dict) > 0
     then exec (thenStmts : statements) dict input
     else exec (elseStmts : statements) dict input
 
 --Similar to the 'If Then Else' exec, if the while condition is satisfied, then the 'then' instruction is
 --executed. Else, just skip instead of a condition
 exec (While expression stmt : statements) dict input
-  | Expr.value expression dict > 0 = exec (stmt : whileStatement : statements) dict input
+  | result > 0 = exec (stmt : whileStatement : statements) dict input
   | otherwise = skip
-  where whileStatement = While expression stmt
+  where result = Expr.value expression dict 
+        whileStatement = While expression stmt
         skip = exec statements dict input
 
 --When reading a new variable, we need to add it to our dictionary (kinda acts as a memory)
