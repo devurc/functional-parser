@@ -89,8 +89,8 @@ parens cond str = if cond then "(" ++ str ++ ")" else str
 shw :: Int -> Expr -> String
 shw prec (Num n) = show n
 shw prec (Var v) = v
-shw prec (Add t u) = parens (prec>5) (shw 5 t ++ "+" ++ shw 5 u)
-shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ "-" ++ shw 6 u)
+shw prec (Add t u) = parens (prec>5) (shw 5 t ++ " + " ++ shw 5 u)
+shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ " - " ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
 

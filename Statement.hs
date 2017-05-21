@@ -43,7 +43,7 @@ begin = accept "begin" -# iter statement #- require "end" >-> Begin
 ifs = accept "if" -# Expr.parse # require "then" -# statement # require "else" -# statement >-> buildIf
 buildIf ((expression, thenstmt), elsestmt) = If expression thenstmt elsestmt
 
-while = accept "while" -# Expr.parse #- require "do" #statement >-> buildWhile
+while = accept "while" -# Expr.parse #- require "do" # statement >-> buildWhile
 buildWhile(expression, statement) = While expression statement
 
 readStatement = accept "read" -# word #- require ";" >-> Read
@@ -109,11 +109,20 @@ indent = "  "
 
 instance Parse Statement where
   parse = statement
-  toString (Assignment variable expression) = indent ++ variable ++ ":=" ++ Expr.toString expression ++ ";" ++ "\n"
+  toString (Assignment variable expression) = variable ++ " := " ++ Expr.toString expression ++ ";" ++ "\n"
+  toString (Read variable) = "read " ++ variable ++ ";" ++ "\n"
+  toString (Write expression) = "write " ++ Expr.toString expression  ++ ";" ++ "\n"
   toString (Skip) = indent ++ "skip" ++ ";" ++ "\n"
-  toString (Begin statements) = indent ++ "begin" ++ "\n" ++ stmt ++ "end" ++ "\n"
-    where stmt = foldr1 (++) $ map toString statements
-  toString (If expression thenstmt elsestmt) = indent ++ "if" ++ Expr.toString expression ++ "then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ "else" ++ indent ++ Expr.toString elsestmt ++ "\n"
-  toString (While expression stmt) = indent ++ "while" ++ Expr.toString expression ++ "do" ++ "\n" ++ indent ++ Expr.toString stmt
-  toString (Read variable) = indent ++ "read" ++ variable ++ ";" ++ "\n"
-  toString (Write expression) = indent ++ "write" ++ Expr.toString expression  ++ ";" ++ "\n"
+  toString (While expression stmt) = "while " ++ Expr.toString expression ++ " do" 
+    ++ "\n" ++ indent ++ Expr.toString stmt 
+
+  toString (Begin statements) = "begin" ++ "\n" ++ stmts ++ indent ++ "end" ++ "\n"
+    where stmts = foldr1 (++) $ map (doubleIndent ++) strings
+          doubleIndent = indent ++ indent 
+          strings = map toString statements
+
+  toString (If expression thenstmt elsestmt) = "if " ++ Expr.toString expression
+    ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent 
+    ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n" 
+  
+  
