@@ -121,21 +121,12 @@ value (Var v) dictionary = case (Dictionary.lookup v dictionary) of
   Nothing -> error ("Expr.value: undefined variable " ++ v)
   Just a -> a
 
-
-
-value (Add exprl exprr) dictionary = value exprl dictionary + value exprr dictionary
-value (Sub exprl exprr) dictionary = value exprl dictionary + value exprr dictionary
-value (Mul exprl exprr) dictionary = value exprl dictionary * value exprr dictionary
-
---I tried to condense the repetitive stuff into the following keywords but the
---ghci thing didnt like it
-  --where evaluateLeft = value exprl dictionary
-        --evaluateRight = value exprr dictionary
-
-value (Div exprl exprr) dictionary = case value exprr dictionary of
+value (Add exprl expr2) dictionary = value exprl dictionary + value expr2 dictionary
+value (Sub exprl expr2) dictionary = value exprl dictionary - value expr2 dictionary
+value (Mul exprl expr2) dictionary = value exprl dictionary * value expr2 dictionary
+value (Div exprl expr2) dictionary = case value expr2 dictionary of
   0 -> error "Expr.value: Division by 0 not permitted"
-  _ -> value exprl dictionary `div` value exprr dictionary
-
+  _ -> value exprl dictionary `div` value expr2 dictionary
 
 
 instance Parse Expr where
