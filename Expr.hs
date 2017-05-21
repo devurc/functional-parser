@@ -50,7 +50,8 @@ import qualified Dictionary
 
 --Expr values can only be of the following values (it is also somewhat recursive):
 data Expr = Num Integer | Var String | Add Expr Expr
-       | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
+       | Sub Expr Expr | Mul Expr Expr | Div Expr Expr 
+       | Pow Expr Expr
          deriving Show
 
 --Type examples include Bool, Char, Int etc. Now the above data values are instances
@@ -93,6 +94,7 @@ shw prec (Add t u) = parens (prec>5) (shw 5 t ++ " + " ++ shw 5 u)
 shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ " - " ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
+-- shw prec (Pow t u) = parens (prec>7) (shw 7 t ++ "^" ++ shw 7 u)
 
 ------------------------------------------------------------------------
   ----VALUE FUNCTION----
@@ -127,7 +129,7 @@ value (Mul exprl expr2) dictionary = value exprl dictionary * value expr2 dictio
 value (Div exprl expr2) dictionary = case value expr2 dictionary of
   0 -> error "Expr.value: Division by 0 not permitted"
   _ -> value exprl dictionary `div` value expr2 dictionary
-
+-- value (Pow expr1 expr2) dictionary = value expr1 dictionary ^ value expr2 dictionary
 
 instance Parse Expr where
     parse = expr
