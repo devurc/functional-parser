@@ -33,8 +33,8 @@ readStatement = accept "read" -# word #- require ";" >-> Read
 
 write = accept "write" -# Expr.parse #- require ";" >-> Write
 
-commentStatement = (accept "--" -#iter word) #- require '\\n' >-> buildComment
-buildComment s = Comment unwords s
+commentStatement = (accept "--" -#iter word) #- require "\n" >-> buildComment
+buildComment s = Comment $ unwords s
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []

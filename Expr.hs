@@ -62,7 +62,7 @@ term = factor #> term'
 expr' e = addOp # term >-> bldOp e #> expr' ! return e
 expr = term #> expr'
 
-pow' e = exOp # factor >-> bldOp e #> pow' ! return e
+pow' e = powOp # factor >-> bldOp e #> pow' ! return e
 pow = factor #> pow'
 
 parens cond str = if cond then "(" ++ str ++ ")" else str

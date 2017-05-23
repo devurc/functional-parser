@@ -49,16 +49,21 @@ rp1 = Program.exec p1 [1024, 2]
 p4 = fromString  ("\
 \read a;\
 \read b;\
-\-- a comment\n\
 \s := 3;\
-\while a do\
-\  begin\
-\    c := a^s;\
-\    d := 2^a;\
-\    write c;\
-\    write d;\
-\    a := a-1;\
-\  end\
-\write a;")
+\c := a^s;")
+
+-- \read a;\
+-- \read b;\
+-- \-- a comment\n\
+-- \s := 3;\
+-- \while a do\
+-- \  begin\
+-- \    c := a^s;\
+-- \    d := 2^a;\
+-- \    write c;\
+-- \    write d;\
+-- \    a := a-1;\
+-- \  end\
+-- \write a;")
 
 rp4 = Program.exec p4 [4,4]
