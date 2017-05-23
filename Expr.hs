@@ -47,7 +47,7 @@ mulOp = lit '*' >-> (\ _ -> Mul) !
 addOp = lit '+' >-> (\ _ -> Add) !
         lit '-' >-> (\ _ -> Sub)
 
-expOp = lit '^' >-> (\_ -> Exp)
+expOp = lit '^' >-> (\ _ -> Exp)
 
 bldOp e (oper,e') = oper e e'
 

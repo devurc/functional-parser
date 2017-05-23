@@ -36,7 +36,7 @@ buildRead v = Read v
 writestmt = accept "write" -# Expr.parse #- require ";" >-> buildWrite
 buildWrite e = Write e
 
-commentstmt = (accept "--" -# iter word) #- require "\n" >-> buildComment
+commentstmt = (accept "--" -# iter word) #- require "\\n" >-> buildComment
 buildComment s = Comment (unwords s)
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
@@ -91,4 +91,4 @@ instance Parse Statement where
     ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent
     ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n"
 
-  toString (Comment s) = "-- " ++ s ++ "\n\n"
+  toString (Comment s) = "-- " ++ s ++ "\\n\n"
