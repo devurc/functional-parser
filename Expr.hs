@@ -1,24 +1,3 @@
-------------------------------------------------------------------------
---Contains a data type for representing:
--- - an arithmetic expression
--- - an expression parser
--- - an expression evaluator
--- - a function for converting the representation into a string
-
--- TASK: Implement the function value. The expression value e dictionary should
--- return the value of e if all the variables occur in dictionary and there is
--- no division by zero. Otherwise an error should be reported using error
-
--- Main type is renamed to T
--- The value function should evaluate an expression
--- Will need a dictionary to find the values of the variables
--- Will make heavy use of the parser functions - import parser module
-
--- We rename the type class Parse to T.
-
---Need to extend the datatype
-------------------------------------------------------------------------
-
 module Expr(Expr, T, parse, fromString, value, toString) where
 
 {-
@@ -47,23 +26,16 @@ import Prelude hiding (return, fail)
 import Parser hiding (T)
 import qualified Dictionary
 
-
---Expr values can only be of the following values (it is also somewhat recursive):
 data Expr = Num Integer | Var String | Add Expr Expr
        | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
        | Pow Expr Expr
          deriving Show
 
---Type examples include Bool, Char, Int etc. Now the above data values are instances
---of the type T
 type T = Expr
 
 var, num, factor, term, expr, pow :: Parser Expr
 
 term', expr', pow' :: Expr -> Parser Expr
-
-pow' e = exOp # factor >-> bldOp e #> pow' ! return e
-pow = factor #> pow'
 
 var = word >-> Var
 
@@ -90,6 +62,9 @@ term = factor #> term'
 expr' e = addOp # term >-> bldOp e #> expr' ! return e
 expr = term #> expr'
 
+pow' e = exOp # factor >-> bldOp e #> pow' ! return e
+pow = factor #> pow'
+
 parens cond str = if cond then "(" ++ str ++ ")" else str
 
 shw :: Int -> Expr -> String
@@ -100,25 +75,6 @@ shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ " - " ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
 shw prec (Pow t u) = parens (prec>7) (shw 7 t ++ "^" ++ shw 7 u)
-
-------------------------------------------------------------------------
-  ----VALUE FUNCTION----
---Implement the function value. The expression value e dictionary should return
---the value of e if all the variables occur in dictionary and there is no division
---by 0.
-
---The dictionary module is imported. It has the qualified keyword to cause the
---imported names to be prefixed by the name of the module imported.
-
---To look up something in a dictionary, the syntax is lookup a (Dictionary dict)
---lookup :: (Eq a, Ord a) => a -> T a b -> Maybe b
---lookup a (Dictionary dict) = Prelude.lookup a dict
-
---These are all the expressions we must consider in the value function:
-  --Num Integer, Var String, Add Expr Expr, Sub Expr Expr, Mul Expr Expr,
-  --Div Expr Expr
-
-------------------------------------------------------------------------
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 --If it's a number then just return it because it is the final value.
