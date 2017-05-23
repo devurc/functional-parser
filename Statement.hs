@@ -50,6 +50,10 @@ readStatement = accept "read" -# word #- require ";" >-> Read
 
 write = accept "write" -# Expr.parse #- require ";" >-> Write
 
+comment = ((isComment # skipToNewLine) -# statement) ! statement
+  where isComment = accept "--"
+        skipToNewLine = takeWhile (/= "\n") []
+
 ------------------------------------------------------------------------
 --Use the above statements to define the parse function, put all statements under
 --a new variable, 'statement'
@@ -90,7 +94,7 @@ exec (If cond thenStmts elseStmts: statements) dict input =
 exec (While expression stmt : statements) dict input
   | result > 0 = exec (stmt : whileStatement : statements) dict input
   | otherwise = skip
-  where result = Expr.value expression dict 
+  where result = Expr.value expression dict
         whileStatement = While expression stmt
         skip = exec statements dict input
 
@@ -115,16 +119,14 @@ instance Parse Statement where
   toString (Read variable) = "read " ++ variable ++ ";" ++ "\n"
   toString (Write expression) = "write " ++ Expr.toString expression  ++ ";" ++ "\n"
   toString (Skip) = indent ++ "skip" ++ ";" ++ "\n"
-  toString (While expression stmt) = "while " ++ Expr.toString expression ++ " do" 
-    ++ "\n" ++ indent ++ Expr.toString stmt 
+  toString (While expression stmt) = "while " ++ Expr.toString expression ++ " do"
+    ++ "\n" ++ indent ++ Expr.toString stmt
 
   toString (Begin statements) = "begin" ++ "\n" ++ stmts ++ indent ++ "end" ++ "\n"
     where stmts = foldr1 (++) $ map (doubleIndent ++) strings
-          doubleIndent = indent ++ indent 
+          doubleIndent = indent ++ indent
           strings = map toString statements
 
   toString (If expression thenstmt elsestmt) = "if " ++ Expr.toString expression
-    ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent 
-    ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n" 
-  
-  
+    ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent
+    ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n"
