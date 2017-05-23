@@ -8,6 +8,7 @@ p = fromString  ("\
 \read k;\
 \read n;\
 \m := 1;\
+\--this is a comment\
 \while n-m do\
 \  begin\
 \    if m - m/k*k then\

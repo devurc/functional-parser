@@ -28,7 +28,7 @@ import qualified Dictionary
 
 data Expr = Num Integer | Var String | Add Expr Expr
        | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
-       | Pow Expr Expr
+       | Exp Expr Expr
          deriving Show
 
 type T = Expr
@@ -47,7 +47,7 @@ mulOp = lit '*' >-> (\ _ -> Mul) !
 addOp = lit '+' >-> (\ _ -> Add) !
         lit '-' >-> (\ _ -> Sub)
 
-powOp = lit '^' >-> (\_ -> Pow)
+expOp = lit '^' >-> (\_ -> Exp)
 
 bldOp e (oper,e') = oper e e'
 
@@ -62,7 +62,7 @@ term = factor #> term'
 expr' e = addOp # term >-> bldOp e #> expr' ! return e
 expr = term #> expr'
 
-pow' e = powOp # factor >-> bldOp e #> pow' ! return e
+pow' e = expOp # factor >-> bldOp e #> pow' ! return e
 pow = factor #> pow'
 
 parens cond str = if cond then "(" ++ str ++ ")" else str
@@ -74,10 +74,9 @@ shw prec (Add t u) = parens (prec>5) (shw 5 t ++ " + " ++ shw 5 u)
 shw prec (Sub t u) = parens (prec>5) (shw 5 t ++ " - " ++ shw 6 u)
 shw prec (Mul t u) = parens (prec>6) (shw 6 t ++ "*" ++ shw 6 u)
 shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
-shw prec (Pow t u) = parens (prec>7) (shw 7 t ++ "^" ++ shw 7 u)
+shw prec (Exp t u) = parens (prec>7) (shw 7 t ++ "^" ++ shw 7 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
---If it's a number then just return it because it is the final value.
 value (Num n) _ = n
 
 value (Var v) dictionary = case (Dictionary.lookup v dictionary) of
@@ -90,7 +89,7 @@ value (Mul exprl expr2) dictionary = value exprl dictionary * value expr2 dictio
 value (Div exprl expr2) dictionary = case value expr2 dictionary of
   0 -> error "Expr.value: Division by 0 not permitted"
   _ -> value exprl dictionary `div` value expr2 dictionary
-value (Pow expr1 expr2) dictionary = (value expr1 dictionary) ^ (value expr2 dictionary)
+value (Exp expr1 expr2) dictionary = (value expr1 dictionary) ^ (value expr2 dictionary)
 
 instance Parse Expr where
     parse = expr

@@ -15,26 +15,29 @@ data Statement =
     Comment String
     deriving Show
 
-assignment = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
+assignmentstmt = word #- accept ":=" # Expr.parse #- require ";" >-> buildAss
 buildAss (variable, expression) = Assignment variable expression
 
-skip = accept "skip" # require ";" >-> buildSkip
+skipstmt = accept "skip" # require ";" >-> buildSkip
 buildSkip _ = Skip
 
-begin = accept "begin" -# iter statement #- require "end" >-> Begin
+beginstmt = accept "begin" -# iter statement #- require "end" >-> buildBegin
+buildBegin (statements) = Begin statements
 
-ifs = accept "if" -# Expr.parse # require "then" -# statement # require "else" -# statement >-> buildIf
+ifstmt = accept "if" -# Expr.parse # require "then" -# statement # require "else" -# statement >-> buildIf
 buildIf ((expression, thenstmt), elsestmt) = If expression thenstmt elsestmt
 
-while = accept "while" -# Expr.parse #- require "do" # statement >-> buildWhile
+whilestmt = accept "while" -# Expr.parse #- require "do" # statement >-> buildWhile
 buildWhile(expression, statement) = While expression statement
 
-readStatement = accept "read" -# word #- require ";" >-> Read
+readstmt = accept "read" -# word #- require ";" >-> buildRead
+buildRead v = Read v
 
-write = accept "write" -# Expr.parse #- require ";" >-> Write
+writestmt = accept "write" -# Expr.parse #- require ";" >-> buildWrite
+buildWrite e = Write e
 
-commentStatement = (accept "--" -#iter word) #- require "\n" >-> buildComment
-buildComment s = Comment $ unwords s
+commentstmt = (accept "--" -# iter word) #- require "\n" >-> buildComment
+buildComment s = Comment (unwords s)
 
 exec :: [T] -> Dictionary.T String Integer -> [Integer] -> [Integer]
 exec [] _ _ = []
@@ -66,7 +69,7 @@ exec (Write expression : statements) dict input = Expr.value expression dict : e
 
 exec (Comment s : statements) dict input = exec statements dict input
 
-statement = assignment ! skip ! begin ! ifs ! while ! readStatement ! write
+statement = assignmentstmt ! skipstmt ! beginstmt ! ifstmt ! whilestmt ! readstmt ! writestmt ! commentstmt
 
 indent = "  "
 
@@ -76,8 +79,8 @@ instance Parse Statement where
   toString (Read variable) = "read " ++ variable ++ ";" ++ "\n"
   toString (Write expression) = "write " ++ Expr.toString expression  ++ ";" ++ "\n"
   toString (Skip) = indent ++ "skip" ++ ";" ++ "\n"
-  toString (While expression stmt) = "while " ++ Expr.toString expression ++ " do"
-    ++ "\n" ++ indent ++ Expr.toString stmt
+  toString (While expression statement) = "while " ++ Expr.toString expression ++ " do"
+    ++ "\n" ++ indent ++ Expr.toString statement
 
   toString (Begin statements) = "begin" ++ "\n" ++ stmts ++ indent ++ "end" ++ "\n"
     where stmts = foldr1 (++) $ map (doubleIndent ++) strings
@@ -87,3 +90,5 @@ instance Parse Statement where
   toString (If expression thenstmt elsestmt) = "if " ++ Expr.toString expression
     ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent
     ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n"
+
+  toString (Comment s) = "-- " ++ s ++ "\n\n"
