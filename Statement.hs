@@ -89,6 +89,6 @@ instance Parse Statement where
 
   toString (If expression thenstmt elsestmt) = "if " ++ Expr.toString expression
     ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent
-    ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n"
+    ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt
 
-  toString (Comment s) = "-- " ++ s ++ "\n\n"
+  toString (Comment s) = "-- " ++ s ++ "\\n" ++ "\n"

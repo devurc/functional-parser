@@ -33,21 +33,20 @@ data Expr = Num Integer | Var String | Add Expr Expr
 
 type T = Expr
 
-var, num, factor, term, expr, pow :: Parser Expr
+var, num, factor, term, expr :: Parser Expr
 
-term', expr', pow' :: Expr -> Parser Expr
+term', expr' :: Expr -> Parser Expr
 
 var = word >-> Var
 
 num = number >-> Num
 
 mulOp = lit '*' >-> (\ _ -> Mul) !
-        lit '/' >-> (\ _ -> Div)
+        lit '/' >-> (\ _ -> Div) ! 
+        lit '^' >-> (\ _ -> Exp)
 
 addOp = lit '+' >-> (\ _ -> Add) !
         lit '-' >-> (\ _ -> Sub)
-
-expOp = lit '^' >-> (\ _ -> Exp)
 
 bldOp e (oper,e') = oper e e'
 
@@ -61,9 +60,6 @@ term = factor #> term'
 
 expr' e = addOp # term >-> bldOp e #> expr' ! return e
 expr = term #> expr'
-
-pow' e = expOp # factor >-> bldOp e #> pow' ! return e
-pow = factor #> pow'
 
 parens cond str = if cond then "(" ++ str ++ ")" else str
 
