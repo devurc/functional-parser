@@ -91,4 +91,4 @@ instance Parse Statement where
     ++ " then" ++ "\n" ++ indent ++ Expr.toString thenstmt ++ indent
     ++ "else" ++ "\n" ++ indent ++ Expr.toString elsestmt ++ "\n"
 
-  toString (Comment s) = "-- " ++ s ++ "\\n\n"
+  toString (Comment s) = "-- " ++ s ++ "\n\n"

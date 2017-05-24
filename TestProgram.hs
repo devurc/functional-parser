@@ -8,14 +8,14 @@ p = fromString  ("\
 \read k;\
 \read n;\
 \m := 1;\
+\-- a comment\\n\
 \while n-m do\
-\-- comment\\n\
 \  begin\
 \    if m - m/k*k then\
 \      skip;\
 \    else\
 \      write m;\
-\    m := m + 1^1;\
+\    m := m + 1;\
 \  end")
 
 p1 = fromString  ("\
