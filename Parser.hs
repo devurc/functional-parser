@@ -1,3 +1,7 @@
+--------------------------------------------------------------------------------
+-- This module contains a number of derived parsers and parser operators.
+--------------------------------------------------------------------------------
+
 module Parser(module CoreParser, T, digit, digitVal, chars, letter, err,
               lit, number, iter, accept, require, token,
               spaces, word, (-#), (#-)) where
@@ -43,7 +47,7 @@ accept :: String -> Parser String
 accept w = (token (chars (length w))) ? (==w)
 
 require :: String -> Parser String
-require w  = accept w ! (err ("Program error was expecting: "))
+require w  = accept w ! (err ("Program error: "))
 
 lit :: Char -> Parser Char
 lit c = token char ? (==c)

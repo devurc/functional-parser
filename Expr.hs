@@ -1,3 +1,11 @@
+--------------------------------------------------------------------------------
+-- This module contains a:
+--   data type for representing an arithmetic expression
+--   expression parser
+--   expression evaluator
+--   a function for converting the representation into a string
+--------------------------------------------------------------------------------
+
 module Expr(Expr, T, parse, fromString, value, toString) where
 
 {-
@@ -26,9 +34,13 @@ import Prelude hiding (return, fail)
 import Parser hiding (T)
 import qualified Dictionary
 
-data Expr = Num Integer | Var String | Add Expr Expr
-       | Sub Expr Expr | Mul Expr Expr | Div Expr Expr
-       | Exp Expr Expr
+data Expr = Num Integer |
+            Var String |
+            Add Expr Expr |
+            Sub Expr Expr |
+            Mul Expr Expr |
+            Div Expr Expr |
+            Exp Expr Expr
          deriving Show
 
 type T = Expr
@@ -42,7 +54,7 @@ var = word >-> Var
 num = number >-> Num
 
 mulOp = lit '*' >-> (\ _ -> Mul) !
-        lit '/' >-> (\ _ -> Div) ! 
+        lit '/' >-> (\ _ -> Div) !
         lit '^' >-> (\ _ -> Exp)
 
 addOp = lit '+' >-> (\ _ -> Add) !

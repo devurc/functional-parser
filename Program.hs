@@ -1,3 +1,11 @@
+--------------------------------------------------------------------------------
+-- This module contains a:
+--     data type for representing a program
+--     program parser
+--     program interpreter
+--     function for converting the representation into a string
+--------------------------------------------------------------------------------
+
 module Program(T, parse, fromString, toString, exec) where
 import Parser hiding (T)
 import qualified Statement
